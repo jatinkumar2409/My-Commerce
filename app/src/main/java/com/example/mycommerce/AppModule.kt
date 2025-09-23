@@ -1,9 +1,11 @@
 package com.example.mycommerce
 
 import com.example.mycommerce.data.AlarmSchedularImpl
+import com.example.mycommerce.data.TriggerFcmImpl
 import com.example.mycommerce.data.apiClientImpl
 import com.example.mycommerce.data.networkObserverImpl
 import com.example.mycommerce.domain.AlarmSchedular
+import com.example.mycommerce.domain.TriggerFcm
 import com.example.mycommerce.domain.apiClient
 import com.example.mycommerce.domain.networkObserver
 import com.example.mycommerce.presentation.BottomNavViewModel
@@ -51,6 +53,9 @@ val module = module {
     }
     viewModel {
         MiniViewModel(get())
+    }
+    single<TriggerFcm> {
+        TriggerFcmImpl()
     }
 
 }

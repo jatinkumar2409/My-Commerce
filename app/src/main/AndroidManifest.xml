@@ -26,6 +26,13 @@
             </intent-filter>
         </activity>
         <receiver android:name=".data.AlarmReciever" android:enabled="true" android:exported="false"/>
+        <service
+            android:name=".data.FirebaseTokenService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>
