@@ -105,9 +105,7 @@ class MainActivity : ComponentActivity(), PaymentResultWithDataListener {
                           com.example.mycommerce.presentation.Category.CategoryScreen(categoryViewModel , args.category , navController)
                       }
                         composable<CheckoutScreen> {
-                            var amount by rememberSaveable {
-                                mutableStateOf(0)
-                            }
+
                             val args = it.toRoute<CheckoutScreen>()
                             val list = remember {
                                 mutableStateListOf<CheckoutProduct>()
