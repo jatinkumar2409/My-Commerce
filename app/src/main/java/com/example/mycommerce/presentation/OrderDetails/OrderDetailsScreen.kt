@@ -74,11 +74,19 @@ fun OrderDetailsScreen(navController: NavHostController , id : String , viewMode
                 }
             }
             else {
+                var txt by rememberSaveable {
+                    mutableStateOf("")
+                }
+                LaunchedEffect(Unit) {
+                    list?.quantities?.forEachIndexed { i, it ->
+                        txt += "${list?.titles[i]} - $it " + if (it==1) "Unit\n" else "Units \n" + "\n"
+                    }
+                }
                 Column(modifier = Modifier
                     .fillMaxSize()
                     .padding(8.dp)) {
                     Text(
-                        text = list?.titles?.joinToString().toString(),
+                        text = txt,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.SemiBold
                     )

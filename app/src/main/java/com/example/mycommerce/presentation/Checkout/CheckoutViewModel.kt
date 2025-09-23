@@ -122,7 +122,6 @@ class CheckoutViewModel(private val networkObserver: networkObserver , private v
     }
 
     fun verifyPayment(orderId : String , paymentId : String , signature : String){
-        Log.d("tag" , amount_.toString())
         viewModelScope.launch {
          val body = getClient().post("/verify_payment") {
                 contentType(ContentType.Application.Json)

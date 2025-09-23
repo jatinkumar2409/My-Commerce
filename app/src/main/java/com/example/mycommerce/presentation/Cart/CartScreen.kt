@@ -45,6 +45,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
@@ -74,6 +75,14 @@ fun CartScreen(viewModel: CartScreenViewModel , navController: NavHostController
     Scaffold(modifier = Modifier.fillMaxSize() , topBar = {
         AppBar(true)
     }) { ip ->
+        var showDialog by remember {
+            mutableStateOf(false)
+        }
+        if (showDialog){
+            AppDialog {
+                showDialog = false
+            }
+        }
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -106,20 +115,13 @@ fun CartScreen(viewModel: CartScreenViewModel , navController: NavHostController
                   item {
                       Row(modifier = Modifier.fillMaxWidth() , horizontalArrangement = Arrangement.SpaceBetween) {
                           Button(onClick = {
-                              firestore.collection("users").whereEqualTo("id" , userId).get().addOnSuccessListener {
-                                  it.first().reference.collection("cart").get().addOnSuccessListener { result ->
-                                      for ( i in result){
-                                            i .reference.delete()
-                                      }
-                                      Toast.makeText(context, "Cart deleted", Toast.LENGTH_SHORT).show()
-                                  }
-                              }
+                    showDialog = true
                           } , modifier = Modifier.fillMaxWidth(0.4f) , colors = ButtonDefaults.buttonColors(
                               Blue , Color.White)) {
                               Text(text = "Clear Cart")
                           }
                           Button(onClick = {
-                              navController.navigate(CheckoutScreen(productList = cartProduct.map { it.title } , priceList = cartProduct.map { it.price } , quantity = cartProduct.map { it.quantity }))
+                              navController.navigate(CheckoutScreen(productList = showProducts.map { it.title } , priceList = showProducts.map { it.price } , quantity = showProducts.map { it.quantity }))
                           } , modifier = Modifier.fillMaxWidth(0.8f)  , colors = ButtonDefaults.buttonColors(
                               Blue , Color.White)) {
                               Text(text = "Buy All")
@@ -131,6 +133,41 @@ fun CartScreen(viewModel: CartScreenViewModel , navController: NavHostController
         }
     }
 
+}
+
+@Composable
+fun AppDialog(onDismiss : () -> Unit) {
+    val firestore = FirebaseFirestore.getInstance()
+    val userId = Firebase.auth.currentUser?.uid
+    val context = LocalContext.current
+    Dialog(onDismissRequest = {onDismiss()}) {
+        Box(modifier = Modifier.fillMaxWidth()){
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.fillMaxWidth() , horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(text = "Are you sure to clear the cart?")
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Row(modifier = Modifier.fillMaxWidth() , horizontalArrangement = Arrangement.SpaceAround) {
+                        Button(onClick = {onDismiss()}) {
+                            Text(text = "Cancel")
+                        }
+                        Button(onClick = {
+                            firestore.collection("users").whereEqualTo("id" , userId).get().addOnSuccessListener {
+                                it.first().reference.collection("cart").get().addOnSuccessListener { result ->
+                                    for ( i in result){
+                                        i .reference.delete()
+                                    }
+                                    Toast.makeText(context, "Cart deleted", Toast.LENGTH_SHORT).show()
+                                    onDismiss()
+                                }
+                            }
+                        }) {
+                            Text(text = "Clear")
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -152,7 +189,7 @@ fun CartProd(cartProduct: CartProduct ,onClick : (Int) -> Unit , onDelete : (Int
                     .padding(4.dp)) {
                     Text(text = cartProduct.title , fontSize = 18.sp , fontWeight = FontWeight.SemiBold , maxLines = 2 , overflow = TextOverflow.Clip)
                     Text(text = cartProduct.desc , maxLines = 2 , overflow = TextOverflow.Ellipsis)
-                    Row(modifier = Modifier.fillMaxWidth() , horizontalArrangement = Arrangement.SpaceAround) {
+                    Row(modifier = Modifier.fillMaxWidth() , horizontalArrangement = Arrangement.SpaceBetween) {
                         Column {
                             Text(text = "Quantity : ${cartProduct.quantity}")
                             Text(

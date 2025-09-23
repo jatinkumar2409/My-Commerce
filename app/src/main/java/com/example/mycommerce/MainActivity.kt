@@ -42,6 +42,8 @@ import com.example.mycommerce.presentation.SignIn.SignInScreen
 import com.example.mycommerce.presentation.SignInScreen
 import com.example.mycommerce.presentation.UserScreen
 import com.example.mycommerce.ui.theme.MyCommerceTheme
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 import com.razorpay.PaymentData
 import com.razorpay.PaymentResultWithDataListener
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -60,6 +62,7 @@ class MainActivity : ComponentActivity(), PaymentResultWithDataListener {
         val miniViewModel by viewModel<MiniViewModel>()
         setContent {
             MyCommerceTheme {
+                val user = Firebase.auth.currentUser
                val navController = rememberNavController()
                 val currentBackStack by navController.currentBackStackEntryAsState()
                 val currentDestination = currentBackStack?.destination?.route
@@ -76,7 +79,7 @@ class MainActivity : ComponentActivity(), PaymentResultWithDataListener {
                         }
                     }
                 ) { ip ->
-                    NavHost(navController = navController, startDestination = SignInScreen , modifier = Modifier.padding(bottom = ip.calculateBottomPadding())) {
+                    NavHost(navController = navController, startDestination = if (user != null) HomeScreen else SignInScreen , modifier = Modifier.padding(bottom = ip.calculateBottomPadding())) {
                         composable<SignInScreen> {
                             SignInScreen(navController)
                         }
@@ -91,7 +94,7 @@ class MainActivity : ComponentActivity(), PaymentResultWithDataListener {
                             com.example.mycommerce.presentation.Orders.OrdersScreen(viewModel = ordersViewModel , navController = navController)
                         }
                         composable<UserScreen> {
-                            com.example.mycommerce.presentation.About.UserScreen()
+                            com.example.mycommerce.presentation.About.UserScreen(navController)
                         }
                         composable<ProductScreen> {
                             val args = it.toRoute<ProductScreen>()

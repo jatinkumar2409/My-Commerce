@@ -42,7 +42,7 @@ class TriggerFcmImpl : TriggerFcm {
             contentType(io.ktor.http.ContentType.Application.Json)
            setBody(fcmData(token , title , body))
         }.bodyAsText()
-        Log.d("tag" , a)
+
     }
 }
 

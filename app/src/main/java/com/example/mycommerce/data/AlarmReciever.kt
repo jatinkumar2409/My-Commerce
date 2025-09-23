@@ -23,7 +23,7 @@ class AlarmReciever : BroadcastReceiver() , KoinComponent {
     var body : String = ""
     override fun onReceive(context: Context?, intent: Intent?) {
 
-//        Log.d("tag" , "on Recieve called")
+
 
     val id = intent?.getStringExtra("id")
 
@@ -37,7 +37,7 @@ class AlarmReciever : BroadcastReceiver() , KoinComponent {
                                   firestore.collection("users").whereEqualTo("id" ,userId ).get().addOnSuccessListener {
                                               token = it.first().getString("token") ?: ""
                                                   CoroutineScope(Dispatchers.Default).launch {
-                                                  Log.d("tag", body)
+
                                                   fcm.notifyfcm(
                                                       token,
                                                       "Order Delivered",

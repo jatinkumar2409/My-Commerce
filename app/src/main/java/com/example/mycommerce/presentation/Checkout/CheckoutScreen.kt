@@ -63,7 +63,6 @@ import java.util.Locale
 fun CheckoutScreen(navController: NavHostController , checkoutViewModel: CheckoutViewModel , list : List<CheckoutProduct> , onPayClick : (Int) -> Unit){
     val status by checkoutViewModel.paymentVerified.collectAsStateWithLifecycle()
     val isConnected by checkoutViewModel.isConnected.collectAsStateWithLifecycle()
-    Log.d("tag1" , list.toString())
     val price = list.sumOf {
         it.price
     }
@@ -99,7 +98,20 @@ fun CheckoutScreen(navController: NavHostController , checkoutViewModel: Checkou
     }) { ip->
     if (status?.success == true || isPayLater){
   checkoutViewModel.addOrder(isPayLater , list){
-      navController.navigate(OrderDetailsScreen(it))
+      if(list.size > 1){
+          firestore.collection("users").whereEqualTo("id" , userId).get().addOnSuccessListener { it ->
+              it.first().reference.collection("cart").get().addOnSuccessListener { it ->
+                  for(i in it ){
+                      i.reference.delete()
+                  }
+              }
+          }
+      }
+      navController.navigate(OrderDetailsScreen(it)){
+          popUpTo(CheckoutScreen){
+              inclusive = true
+          }
+      }
       Toast.makeText(context, "Order Placed", Toast.LENGTH_SHORT).show()
   }
     }
@@ -147,18 +159,19 @@ fun CheckoutScreen(navController: NavHostController , checkoutViewModel: Checkou
                                     )
                                     Text(text = "₹${item.price}")
                                 }
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.End
-                                ) {
-                                    Text(
-                                        text = "₹${price}.00",
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 18.sp
-                                    )
-                                }
+
 
                             }
+                        }
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            Text(
+                                text = "₹${price}.00",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp
+                            )
                         }
 
                     }

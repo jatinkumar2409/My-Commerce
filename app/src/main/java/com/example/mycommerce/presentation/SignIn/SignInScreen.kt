@@ -4,6 +4,7 @@ import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,11 +21,14 @@ import androidx.compose.material.icons.filled.Password
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,6 +44,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.core.text.isDigitsOnly
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
@@ -52,10 +57,10 @@ import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
 fun SignInScreen(navController: NavHostController){
-    val auth = Firebase.auth
-    if(auth.currentUser != null){
-        navController.navigate(HomeScreen)
+    var showDialog by remember {
+        mutableStateOf(false)
     }
+    val auth = Firebase.auth
     val firestore = FirebaseFirestore.getInstance()
     val context = LocalContext.current
     var isCreate by rememberSaveable {
@@ -73,9 +78,15 @@ fun SignInScreen(navController: NavHostController){
     var address by remember {
         mutableStateOf("")
     }
+    val gmail = remember {
+        mutableStateOf("")
+    }
+    if (showDialog){
+        DialogReset({showDialog = false} ,gmail)
+    }
     Column(modifier = Modifier.fillMaxSize() ) {
         if (isCreate){
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(24.dp))
             Row(verticalAlignment = Alignment.CenterVertically , modifier = Modifier.padding(8.dp)) {
                 Icon(painter = painterResource(R.drawable.outline_shopping_bag_speed_24) , contentDescription = "icon"
                  , tint = Blue)
@@ -150,7 +161,7 @@ firestore.collection("users").add(User(id = it.user?.uid.toString() , name = ema
             }
         }
         else{
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(24.dp))
             Row(verticalAlignment = Alignment.CenterVertically , modifier = Modifier.padding(8.dp)) {
                 Icon(painter = painterResource(R.drawable.outline_shopping_bag_speed_24) , contentDescription = "icon"
                     , tint = Blue)
@@ -197,8 +208,38 @@ firestore.collection("users").add(User(id = it.user?.uid.toString() , name = ema
                 Text(text = "Forget Password?" , fontSize = 18.sp , color = Blue , modifier = Modifier.clickable{
                     email = ""
                     password = ""
-                    isCreate = false
+                    showDialog = true
+
                 })
+            }
+        }
+    }
+}
+
+@Composable
+fun DialogReset(onDismiss : () -> Unit , email : MutableState<String>) {
+    val context = LocalContext.current
+    Dialog(onDismissRequest = {
+        onDismiss()
+    }) {
+        Box(modifier = Modifier.fillMaxWidth()){
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.fillMaxWidth() , horizontalAlignment = Alignment.CenterHorizontally) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(text = "Enter email for password reset")
+                    OutlinedTextField(value = email.value , onValueChange = {
+                        email.value = it
+                    })
+                    Spacer(modifier = Modifier.height(18.dp))
+                    Button(onClick = {
+                        Firebase.auth.sendPasswordResetEmail(email.value).addOnSuccessListener {
+                            Toast.makeText(context, "Email Sent", Toast.LENGTH_SHORT).show()
+                        }
+                        onDismiss()
+                    } , colors = ButtonDefaults.buttonColors(Blue , Color.White)) {
+                        Text(text = "Send")
+                    }
+                }
             }
         }
     }
